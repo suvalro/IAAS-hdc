@@ -1,0 +1,3364 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aislamientos IAAS — Hospital del Cobre</title>
+<style>
+  /* ============================================================
+     TOKENS
+  ============================================================ */
+  :root {
+    --azul:       #1A4F7A;
+    --azul-med:   #2B7FC1;
+    --azul-claro: #D6EAF8;
+    --azul-xclaro:#EBF5FB;
+    --rojo:       #C0392B;
+    --rojo-bg:    #FDEDEC;
+    --verde:      #1A7A4A;
+    --verde-bg:   #E9F7EF;
+    --naranja:    #D35400;
+    --naranja-bg: #FEF5EC;
+    --gris-texto: #2C3E50;
+    --gris-claro: #F4F6F8;
+    --gris-borde: #D0D7DF;
+    --blanco:     #FFFFFF;
+    --sombra:     0 2px 8px rgba(0,0,0,.10);
+    --radio:      8px;
+    --fuente:     'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+
+  /* ============================================================
+     BASE
+  ============================================================ */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--fuente);
+    background: var(--gris-claro);
+    color: var(--gris-texto);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* ============================================================
+     HEADER
+  ============================================================ */
+  header {
+    background: var(--azul);
+    color: white;
+    padding: 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,.25);
+  }
+  .header-top {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 20px 8px;
+  }
+  .logo-circle {
+    width: 42px; height: 42px;
+    background: var(--azul-med);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .header-titles h1 {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: .3px;
+  }
+  .header-titles p {
+    font-size: 11px;
+    color: var(--azul-claro);
+    opacity: .9;
+  }
+  .header-badge {
+    margin-left: auto;
+    background: rgba(255,255,255,.15);
+    border: 1px solid rgba(255,255,255,.3);
+    color: white;
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  /* BARRA DE BÚSQUEDA */
+  .search-bar {
+    padding: 8px 20px 12px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .search-wrap {
+    position: relative;
+    flex: 1;
+  }
+  .search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    color: rgba(255,255,255,.6);
+    pointer-events: none;
+  }
+  #buscar {
+    width: 100%;
+    padding: 9px 12px 9px 34px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,.3);
+    background: rgba(255,255,255,.15);
+    color: white;
+    font-size: 13px;
+    font-family: var(--fuente);
+    outline: none;
+    transition: background .2s;
+  }
+  #buscar::placeholder { color: rgba(255,255,255,.6); }
+  #buscar:focus { background: rgba(255,255,255,.25); }
+
+  .filtro-tipo {
+    padding: 9px 12px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,.3);
+    background: rgba(255,255,255,.12);
+    color: white;
+    font-size: 12px;
+    font-family: var(--fuente);
+    outline: none;
+    cursor: pointer;
+    min-width: 130px;
+  }
+  .filtro-tipo option { color: var(--gris-texto); background: white; }
+
+  /* ============================================================
+     LAYOUT PRINCIPAL
+  ============================================================ */
+  .main-wrap {
+    display: flex;
+    gap: 0;
+    max-width: 1600px;
+    margin: 0 auto;
+    min-height: calc(100vh - 110px);
+  }
+
+  /* PANEL LATERAL */
+  .sidebar {
+    width: 300px;
+    flex-shrink: 0;
+    background: white;
+    border-right: 1px solid var(--gris-borde);
+    overflow-y: auto;
+    height: calc(100vh - 110px);
+    position: sticky;
+    top: 110px;
+  }
+  .sidebar-section { border-bottom: 1px solid var(--gris-borde); }
+  .sidebar-section-title {
+    padding: 10px 14px 8px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--azul);
+    background: var(--azul-xclaro);
+    border-bottom: 1px solid var(--azul-claro);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .sidebar-item {
+    padding: 10px 14px;
+    cursor: pointer;
+    border-bottom: 1px solid #F0F3F6;
+    transition: background .15s;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .sidebar-item:hover { background: var(--azul-xclaro); }
+  .sidebar-item.activo {
+    background: var(--azul-claro);
+    border-left: 3px solid var(--azul-med);
+  }
+  .sidebar-item-nombre {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gris-texto);
+    line-height: 1.4;
+    flex: 1;
+  }
+  .sidebar-item.activo .sidebar-item-nombre { color: var(--azul); }
+  .badge-tipo {
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 10px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .badge-aereo   { background: #FDEDEC; color: #C0392B; }
+  .badge-gotas   { background: #FEF5EC; color: #D35400; }
+  .badge-contacto{ background: #E9F7EF; color: #1A7A4A; }
+  .badge-estandar{ background: #EBF5FB; color: #1A4F7A; }
+  .badge-combo   { background: #F5EEF8; color: #6C3483; }
+
+  /* CONTADOR RESULTADOS */
+  .resultados-count {
+    padding: 8px 14px;
+    font-size: 11px;
+    color: #7F8C8D;
+    background: #FAFBFC;
+    border-bottom: 1px solid var(--gris-borde);
+  }
+
+  /* ============================================================
+     PANEL DETALLE
+  ============================================================ */
+  .detalle-panel {
+    flex: 1;
+    padding: 20px 24px;
+    overflow-y: auto;
+    height: calc(100vh - 110px);
+  }
+
+  /* ESTADO VACÍO / BIENVENIDA */
+  .bienvenida {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 14px 10px;
+    text-align: center;
+    color: #BDC3C7;
+    gap: 3px;
+  }
+  .bienvenida-icon { font-size: 18px; opacity: .2; }
+  .bienvenida h2 { font-size: 11px; color: var(--azul); opacity: .3; font-weight: 500; }
+  .bienvenida p { display: none; }
+
+  /* TARJETA DETALLE */
+  .tarjeta-detalle {
+    background: white;
+    border-radius: var(--radio);
+    box-shadow: var(--sombra);
+    overflow: hidden;
+    animation: slideIn .18s ease;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .tarjeta-header {
+    padding: 18px 22px 14px;
+    border-bottom: 1px solid var(--gris-borde);
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .tarjeta-icono {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .ic-aereo    { background: var(--rojo-bg); }
+  .ic-gotas    { background: var(--naranja-bg); }
+  .ic-contacto { background: var(--verde-bg); }
+  .ic-estandar { background: var(--azul-xclaro); }
+  .ic-combo    { background: #F5EEF8; }
+
+  .tarjeta-titulo-wrap { flex: 1; }
+  .tarjeta-nombre {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--gris-texto);
+    line-height: 1.3;
+    margin-bottom: 6px;
+  }
+  .tarjeta-badges { display: flex; flex-wrap: wrap; gap: 5px; }
+  .tipo-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+  .tb-aereo    { background: var(--rojo-bg); color: var(--rojo); border: 1px solid #F1948A; }
+  .tb-gotas    { background: var(--naranja-bg); color: var(--naranja); border: 1px solid #F0B27A; }
+  .tb-contacto { background: var(--verde-bg); color: var(--verde); border: 1px solid #82E0AA; }
+  .tb-estandar { background: var(--azul-xclaro); color: var(--azul); border: 1px solid #AED6F1; }
+
+  /* GRID DE DATOS RÁPIDOS */
+  .datos-rapidos {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border-bottom: 1px solid var(--gris-borde);
+  }
+  .dato-rapido {
+    padding: 14px 18px;
+    border-right: 1px solid var(--gris-borde);
+  }
+  .dato-rapido:last-child { border-right: none; }
+  .dato-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+    color: #7F8C8D;
+    margin-bottom: 5px;
+  }
+  .dato-valor {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gris-texto);
+    line-height: 1.4;
+  }
+
+  /* SECCIONES DETALLE */
+  .detalle-body { padding: 18px 22px; display: flex; flex-direction: column; gap: 16px; }
+
+  .bloque {
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid var(--gris-borde);
+  }
+  .bloque-titulo {
+    padding: 9px 14px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .6px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .bloque-cuerpo { padding: 12px 14px; }
+
+  .bloque-epp    .bloque-titulo { background: #EBF5FB; color: var(--azul); }
+  .bloque-hab    .bloque-titulo { background: #F4F6F8; color: #555; }
+  .bloque-notas  .bloque-titulo { background: var(--verde-bg); color: var(--verde); }
+  .bloque-alerta .bloque-titulo { background: var(--rojo-bg); color: var(--rojo); }
+  .bloque-dur    .bloque-titulo { background: #FDFEFE; color: #555; border-bottom: 1px solid var(--gris-borde); }
+
+  .epp-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .epp-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--azul-xclaro);
+    border: 1px solid var(--azul-claro);
+    border-radius: 6px;
+    padding: 7px 11px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--azul);
+  }
+  .epp-item .epp-icono { font-size: 16px; }
+
+  .nota-item {
+    display: flex;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid #F0F3F6;
+    font-size: 13px;
+    color: var(--gris-texto);
+    line-height: 1.5;
+  }
+  .nota-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .nota-bullet { color: var(--verde); font-size: 10px; margin-top: 5px; flex-shrink: 0; }
+
+  .alerta-item {
+    display: flex;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid #FADBD8;
+    font-size: 13px;
+    color: #922B21;
+    line-height: 1.5;
+    font-weight: 500;
+  }
+  .alerta-item:last-child { border-bottom: none; }
+  .alerta-bullet { color: var(--rojo); font-size: 12px; flex-shrink: 0; margin-top: 2px; }
+
+  /* PROCEDIMIENTO PASO A PASO */
+  .pasos { display: flex; flex-direction: column; gap: 0; }
+  .paso {
+    display: flex;
+    gap: 12px;
+    padding: 10px 14px;
+    border-bottom: 1px solid #F0F3F6;
+    font-size: 12px;
+    color: var(--gris-texto);
+    line-height: 1.5;
+  }
+  .paso:last-child { border-bottom: none; }
+  .paso-num {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--azul);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* CHIP DE ALERTA RÁPIDA */
+  .chip-alerta {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--rojo-bg);
+    border: 1px solid #F1948A;
+    color: var(--rojo);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+  }
+
+  /* ============================================================
+     MODAL REFERENCIA RÁPIDA
+  ============================================================ */
+  .fab {
+    position: fixed;
+    bottom: 22px;
+    right: 22px;
+    width: 50px; height: 50px;
+    background: var(--azul);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 22px;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0,0,0,.3);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 200;
+    transition: background .2s, transform .1s;
+  }
+  .fab:hover { background: var(--azul-med); transform: scale(1.08); }
+
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.45);
+    z-index: 300;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.abierto { display: flex; }
+  .modal {
+    background: white;
+    border-radius: 12px;
+    width: min(700px, 95vw);
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 40px rgba(0,0,0,.25);
+    animation: modalIn .2s ease;
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(.96); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+  .modal-header {
+    padding: 16px 20px;
+    background: var(--azul);
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-radius: 12px 12px 0 0;
+  }
+  .modal-header h2 { font-size: 15px; flex: 1; }
+  .modal-close {
+    background: none; border: none; color: white; font-size: 20px;
+    cursor: pointer; line-height: 1; padding: 2px 6px;
+  }
+  .modal-body { padding: 18px 20px; }
+
+  .ref-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .ref-card {
+    border-radius: 8px;
+    padding: 12px 14px;
+    border: 1px solid;
+  }
+  .ref-card.aereo   { border-color: #F1948A; background: var(--rojo-bg); }
+  .ref-card.gotas   { border-color: #F0B27A; background: var(--naranja-bg); }
+  .ref-card.contacto{ border-color: #82E0AA; background: var(--verde-bg); }
+  .ref-card.estandar{ border-color: var(--azul-claro); background: var(--azul-xclaro); }
+  .ref-card-titulo {
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .ref-card ul { padding-left: 14px; font-size: 11px; line-height: 1.7; }
+
+  .ref-epp-tabla {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin-top: 12px;
+  }
+  .ref-epp-tabla th {
+    background: var(--azul);
+    color: white;
+    padding: 7px 10px;
+    text-align: left;
+    font-size: 11px;
+  }
+  .ref-epp-tabla td {
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--gris-borde);
+    vertical-align: top;
+  }
+  .ref-epp-tabla tr:nth-child(even) td { background: var(--gris-claro); }
+
+  /* ============================================================
+     RESPONSIVE
+  ============================================================ */
+  @media (max-width: 768px) {
+    .main-wrap { flex-direction: column; }
+    .sidebar {
+      width: 100%;
+      height: auto;
+      max-height: calc(100vh - 120px);
+      position: static;
+    }
+    .detalle-panel {
+      height: auto;
+      min-height: 0;
+      padding: 14px;
+    }
+    .detalle-panel:has(#bienvenida:not([style*="none"])) {
+      display: none;
+    }
+    .datos-rapidos { grid-template-columns: 1fr 1fr; }
+    .datos-rapidos .dato-rapido:nth-child(3) { border-top: 1px solid var(--gris-borde); }
+    .ref-grid { grid-template-columns: 1fr; }
+    .header-badge { display: none; }
+  }
+
+  /* ============================================================
+     SIN RESULTADOS
+  ============================================================ */
+  .sin-resultados {
+    padding: 30px 14px;
+    text-align: center;
+    color: #95A5A6;
+    font-size: 13px;
+  }
+
+  /* HIGHLIGHT BÚSQUEDA */
+  mark {
+    background: #FDEBD0;
+    color: inherit;
+    border-radius: 2px;
+    padding: 0 1px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     HEADER
+============================================================ -->
+<header>
+  <div class="header-top">
+    <div class="logo-circle">🏥</div>
+    <div class="header-titles">
+      <h1>Aislamientos IAAS</h1>
+      <p>Hospital del Cobre / Dr. Salvador Allende — Calama</p>
+    </div>
+    <span class="header-badge">IAAS-HDC-PA-001 v01/2025</span>
+  </div>
+  <div class="search-bar">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="buscar" placeholder="Buscar condición, agente, microorganismo..." autocomplete="off" spellcheck="false">
+    </div>
+    <select class="filtro-tipo" id="filtroTipo">
+      <option value="">Todos los tipos</option>
+      <option value="aereo">Aérea</option>
+      <option value="gotas">Gotitas</option>
+      <option value="contacto">Contacto</option>
+      <option value="estandar">Solo Estándar</option>
+      <option value="combo">Combinadas</option>
+    </select>
+  </div>
+</header>
+
+<div class="main-wrap">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="resultados-count" id="resultCount">Cargando…</div>
+    <div id="listaCondiciones"></div>
+  </aside>
+
+  <!-- DETALLE -->
+  <main class="detalle-panel" id="detalle">
+    <div class="bienvenida" id="bienvenida">
+      <div class="bienvenida-icon">🛡️</div>
+      <h2>Selecciona una condición</h2>
+    </div>
+    <div id="tarjetaDetalle" style="display:none;"></div>
+  </main>
+
+</div>
+
+<!-- FAB: Referencia rápida -->
+<button class="fab" id="fabRef" title="Referencia rápida EPP">📋</button>
+
+<!-- MODAL: Referencia rápida -->
+<div class="modal-overlay" id="modalRef">
+  <div class="modal">
+    <div class="modal-header">
+      <span>📋</span>
+      <h2>Referencia Rápida de Precauciones</h2>
+      <button class="modal-close" id="cerrarModal">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="ref-grid">
+        <div class="ref-card aereo">
+          <div class="ref-card-titulo" style="color:#C0392B;">🌬️ Vía Aérea (Aerotransportada)</div>
+          <ul>
+            <li>Habitación individual exclusiva</li>
+            <li>Puerta CERRADA siempre</li>
+            <li>KN95 o superior antes de entrar</li>
+            <li>Presión negativa ideal; si no hay: extractor al exterior</li>
+            <li>Personal no inmune: no atender varicela/sarampión</li>
+            <li>Cohorte: solo con autorización IAAS</li>
+          </ul>
+        </div>
+        <div class="ref-card gotas">
+          <div class="ref-card-titulo" style="color:#D35400;">💧 Gotitas (Gota Grande)</div>
+          <ul>
+            <li>Habitación individual o separación ≥1,5 m</li>
+            <li>Mascarilla quirúrgica al &lt;1,5 m del paciente</li>
+            <li>Protección ocular en: COVID, Influenza, SARS, Viruela, Ébola</li>
+            <li>Paciente: mascarilla quirúrgica en traslados</li>
+            <li>No requiere manejo especial del aire</li>
+            <li>En PGA: elevar a KN95</li>
+          </ul>
+        </div>
+        <div class="ref-card contacto">
+          <div class="ref-card-titulo" style="color:#1A7A4A;">🤝 Contacto</div>
+          <ul>
+            <li>Guantes en TODO contacto</li>
+            <li>Delantal/pechera impermeable de un solo uso</li>
+            <li>Retirar EPP DENTRO de la habitación</li>
+            <li>Higiene de manos inmediata al salir</li>
+            <li>CDI/Norovirus: agua y jabón obligatorio</li>
+            <li>KPC/NDM/OXA: habitación + personal exclusivo</li>
+          </ul>
+        </div>
+        <div class="ref-card estandar">
+          <div class="ref-card-titulo" style="color:#1A4F7A;">✅ Solo Estándar</div>
+          <ul>
+            <li>Higiene de manos en los 5 momentos</li>
+            <li>Guantes según exposición prevista</li>
+            <li>Mascarilla + protección ocular si riesgo salpicaduras</li>
+            <li>Manejo seguro de cortopunzantes</li>
+            <li>No requiere aislamiento especial</li>
+          </ul>
+        </div>
+      </div>
+
+      <table class="ref-epp-tabla">
+        <thead>
+          <tr>
+            <th>Símbolo / EPP</th>
+            <th>Cuándo ponérselo</th>
+            <th>Cuándo quitárselo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>🧤 Guantes</strong></td>
+            <td>Antes de tocar al paciente o su entorno</td>
+            <td>Al salir de la unidad / antes de tocar superficies limpias</td>
+          </tr>
+          <tr>
+            <td><strong>🥼 Delantal / Pechera</strong></td>
+            <td>Al entrar a la habitación</td>
+            <td>Dentro de la habitación, antes de salir</td>
+          </tr>
+          <tr>
+            <td><strong>😷 Mascarilla QX</strong></td>
+            <td>Al entrar a la habitación (gotitas) o &lt;1,5 m del paciente</td>
+            <td>Al salir de la habitación / zona de riesgo</td>
+          </tr>
+          <tr>
+            <td><strong>🔵 KN95/N95</strong></td>
+            <td>ANTES de entrar a habitación aérea o PGA</td>
+            <td>Al salir completamente de la habitación</td>
+          </tr>
+          <tr>
+            <td><strong>🥽 Protección ocular</strong></td>
+            <td>Riesgo de salpicaduras o en COVID/Influenza/SARS</td>
+            <td>Al salir de la zona de riesgo</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div style="margin-top:14px; padding:10px 14px; background:var(--rojo-bg); border-radius:6px; border-left:3px solid var(--rojo);">
+        <p style="font-size:12px; color:#922B21; font-weight:600;">⚠ Las precauciones adicionales SIEMPRE se aplican sobre las Precauciones Estándar, nunca las reemplazan.</p>
+      </div>
+      <div style="margin-top:8px; padding:10px 14px; background:var(--azul-xclaro); border-radius:6px; border-left:3px solid var(--azul-med);">
+        <p style="font-size:12px; color:var(--azul);">📞 Consultas IAAS HDC: contactar Unidad de Prevención y Control de Infecciones del establecimiento.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DATOS: CONDICIONES Y AISLAMIENTOS
+// ============================================================
+const CONDICIONES = [
+  // ==================== AÉREA ====================
+  {
+    id: 1,
+    nombre: "Tuberculosis pulmonar / laríngea (confirmada)",
+    tipo: ["aereo"],
+    tipoLabel: ["Aérea"],
+    icono: "🫁",
+    duracion: "Mínimo 2 semanas de tratamiento efectivo. Hasta negativización baciloscopia en TBC resistente.",
+    habitacion: "Individual exclusiva con puerta cerrada permanentemente. Presión negativa ideal; si no hay: extractor al exterior sin corriente de retorno.",
+    epp: [
+      { icono: "🔵", label: "KN95 o superior" },
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+    ],
+    notas: [
+      "Notificar al Programa Local de TBC.",
+      "Preferir manejo ambulatorio cuando sea posible.",
+      "El paciente debe usar mascarilla quirúrgica durante traslados y visitas (altamente infectante: baciloscopia +, cavernas en Rx tórax).",
+      "Coordinar levantamiento de medidas con CPC/IAAS.",
+      "Ventilar la habitación al traslado del paciente.",
+    ],
+    alertas: [
+      "Puerta CERRADA siempre.",
+      "Personal no inmune: NO atender si hay personal inmune disponible.",
+    ],
+    pasos: [
+      "Colócate el KN95 ANTES de entrar a la habitación.",
+      "Agrega guantes y delantal al entrar.",
+      "Realiza la atención clínica.",
+      "Retira guantes y delantal dentro de la habitación.",
+      "Higieniza manos y abre la puerta con toalla de papel.",
+      "Retira el KN95 al salir completamente de la habitación.",
+      "Higieniza manos nuevamente.",
+    ]
+  },
+  {
+    id: 2,
+    nombre: "Tuberculosis pulmonar / laríngea (sospechada)",
+    tipo: ["aereo"],
+    tipoLabel: ["Aérea"],
+    icono: "🫁",
+    duracion: "Hasta descarte: 3 esputos BAAR negativos tomados c/8-24 h (al menos 1 muestra matinal).",
+    habitacion: "Individual, puerta cerrada. Buena ventilación natural preferida.",
+    epp: [
+      { icono: "🔵", label: "KN95 o superior" },
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+    ],
+    notas: [
+      "Descontinuar solo si hay otro diagnóstico que explica el cuadro clínico, o 3 BAAR negativos.",
+      "Coordinar levantamiento con CPC-IAAS antes de suspender.",
+      "Notificar al Programa Local de TBC.",
+    ],
+    alertas: [
+      "No suspender sin coordinación con IAAS.",
+      "Puerta cerrada SIEMPRE.",
+    ],
+    pasos: [
+      "Colócate el KN95 antes de entrar.",
+      "Agrega guantes y delantal.",
+      "Al salir: retira guantes y delantal dentro de la habitación.",
+      "Higieniza manos y retira KN95 al salir de la habitación.",
+    ]
+  },
+  {
+    id: 3,
+    nombre: "Tuberculosis extrapulmonar con lesión drenante",
+    tipo: ["aereo", "contacto"],
+    tipoLabel: ["Aérea", "Contacto"],
+    icono: "🫁",
+    duracion: "Hasta que el drenaje cese y haya 3 cultivos negativos consecutivos.",
+    habitacion: "Individual, puerta cerrada.",
+    epp: [
+      { icono: "🔵", label: "KN95" },
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+      { icono: "🩺", label: "Pechera impermeable" },
+    ],
+    notas: [
+      "Descartar TBC pulmonar activa concomitante.",
+      "Notificar Programa Local de TBC.",
+    ],
+    alertas: [],
+    pasos: [
+      "Colócate KN95 + guantes + delantal + pechera antes de entrar.",
+      "Al salir: retirar EPP dentro de la habitación, higienizar manos, salir.",
+    ]
+  },
+  {
+    id: 4,
+    nombre: "Sarampión",
+    tipo: ["aereo"],
+    tipoLabel: ["Aérea"],
+    icono: "💢",
+    duracion: "4 días desde inicio de erupción. En inmunocomprometidos: duración de la enfermedad.",
+    habitacion: "Individual, presión negativa preferida. Puerta cerrada.",
+    epp: [
+      { icono: "🔵", label: "KN95 mínimo (aunque seas inmune)" },
+      { icono: "🧤", label: "Guantes" },
+    ],
+    notas: [
+      "Profilaxis post-exposición laboral: consultar IAAS.",
+      "Pacientes susceptibles expuestos → Precauciones aéreas.",
+      "Excluir personal susceptible expuesto de la atención.",
+    ],
+    alertas: [
+      "Personal susceptible NO debe atender si hay personal inmune disponible.",
+    ],
+    pasos: [
+      "Colocarse KN95 antes de entrar.",
+      "Agregar guantes.",
+      "Retirar EPP al salir. Higienizar manos.",
+    ]
+  },
+  {
+    id: 5,
+    nombre: "Varicela / Herpes Zoster diseminado (inmunocomprometido)",
+    tipo: ["aereo", "contacto"],
+    tipoLabel: ["Aérea", "Contacto"],
+    icono: "💠",
+    duracion: "Hasta que TODAS las lesiones formen costra.",
+    habitacion: "Individual, puerta cerrada.",
+    epp: [
+      { icono: "🔵", label: "KN95" },
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+    ],
+    notas: [
+      "En traslados: lesiones cutáneas cubiertas + mascarilla quirúrgica al paciente.",
+      "Excluir personal susceptible expuesto: días 8 a 21 post exposición (o día 28 si recibió IgVZ).",
+      "Huéspedes inmunocomprometidos con neumonía varicela: prolongar duración de precauciones.",
+    ],
+    alertas: [
+      "Personal susceptible NO debe atender.",
+    ],
+    pasos: [
+      "KN95 + guantes + delantal antes de entrar.",
+      "Retirar EPP dentro de habitación al salir.",
+      "Higienizar manos al salir.",
+    ]
+  },
+  {
+    id: 6,
+    nombre: "Viruela (variola)",
+    tipo: ["aereo", "contacto"],
+    tipoLabel: ["Aérea", "Contacto"],
+    icono: "⚠️",
+    duracion: "Hasta que todas las costras caigan y emerja piel sana (3–4 semanas).",
+    habitacion: "Individual, presión negativa.",
+    epp: [
+      { icono: "🔵", label: "KN95 o superior" },
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+      { icono: "🥽", label: "Protección ocular" },
+    ],
+    notas: [
+      "Personal NO vacunado no debe atender si hay personal vacunado disponible.",
+      "Notificación inmediata a SEREMI y autoridad sanitaria.",
+      "Consultar profilaxis post-exposición.",
+    ],
+    alertas: ["Notificación de emergencia inmediata.", "Activar protocolo de emergencia sanitaria."],
+    pasos: []
+  },
+  {
+    id: 7,
+    nombre: "SARS (Síndrome Respiratorio Agudo Severo)",
+    tipo: ["aereo", "gotas", "contacto"],
+    tipoLabel: ["Aérea", "Gotitas", "Contacto"],
+    icono: "🦠",
+    duracion: "Duración de la enfermedad + 10 días tras resolución de fiebre (sin síntomas respiratorios o en mejoría).",
+    habitacion: "AIIR (presión negativa) preferida. Si no disponible: habitación individual puerta cerrada.",
+    epp: [
+      { icono: "🔵", label: "KN95 o superior" },
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+      { icono: "🥽", label: "Protección ocular" },
+    ],
+    notas: [
+      "PGA: máximo riesgo de transmisión. Usar máxima protección.",
+      "Notificación inmediata a SEREMI.",
+    ],
+    alertas: ["Notificación de emergencia obligatoria.", "Mínimo personal en contacto con el paciente."],
+    pasos: []
+  },
+
+  // ==================== GOTITAS ====================
+  {
+    id: 8,
+    nombre: "COVID-19 / SARS-CoV-2",
+    tipo: ["aereo", "gotas", "contacto"],
+    tipoLabel: ["Aérea", "Gotitas", "Contacto"],
+    icono: "🦠",
+    duracion: "Inmunosuprimidos: 20 días. Asintomáticos: 5 días desde PCR+. Sintomáticos: 10 días desde inicio síntomas.",
+    habitacion: "Individual exclusiva con baño. Puerta cerrada siempre.",
+    epp: [
+      { icono: "🔵", label: "KN95" },
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+      { icono: "🥽", label: "Antiparra o escudo" },
+    ],
+    notas: [
+      "PGA: usar máscara full face filtro P100 (disponible en HDC).",
+      "Equipo reutilizable exclusivo por paciente (termómetro, esfigmo, oxímetro, etc.).",
+      "Inmunosuprimidos: 20 días independientemente de presentación (con o sin síntomas).",
+      "Casos excepcionales: consultar IAAS.",
+      "Ver Anexo COVID-19 HDC para detalles completos.",
+    ],
+    alertas: [
+      "Levantamiento del aislamiento el día SIGUIENTE al cumplimiento del plazo (ej: 5 días → levantar al día 6).",
+    ],
+    pasos: [
+      "Colocarse KN95 + guantes + delantal + antiparra antes de entrar.",
+      "Mantener puerta cerrada en todo momento.",
+      "Equipo reutilizable se queda en la habitación.",
+      "Retirar EPP dentro de la habitación.",
+      "Higienizar manos al salir.",
+      "Registrar fecha de inicio para calcular levantamiento.",
+    ]
+  },
+  {
+    id: 9,
+    nombre: "Influenza estacional (gripe)",
+    tipo: ["gotas", "contacto"],
+    tipoLabel: ["Gotitas", "Contacto"],
+    icono: "🌡️",
+    duracion: "7 días desde inicio síntomas + ≥24 h sin fiebre. Niños e inmunosuprimidos: 14 días.",
+    habitacion: "Individual preferida. Compartida: distancia ≥1,82 m entre camas.",
+    epp: [
+      { icono: "😷", label: "Mascarilla quirúrgica" },
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+    ],
+    notas: [
+      "PGA: elevar a KN95 + protección ocular.",
+      "Notificar brotes y casos graves que requieran VMI.",
+      "Vacunación anual obligatoria del personal de salud.",
+      "Profilaxis post-exposición contactos según norma MINSAL.",
+      "Privilegiar habitación individual (las gotitas viajan ~1,82 m).",
+    ],
+    alertas: [],
+    pasos: [
+      "Colocarse mascarilla quirúrgica al entrar a la habitación.",
+      "Agregar guantes y delantal.",
+      "Si se realizará PGA: cambiar a KN95 + protección ocular.",
+      "Retirar EPP al salir de la habitación.",
+      "Higienizar manos.",
+    ]
+  },
+  {
+    id: 10,
+    nombre: "Meningitis meningocócica (Neisseria meningitidis)",
+    tipo: ["gotas"],
+    tipoLabel: ["Gotitas"],
+    icono: "🧠",
+    duracion: "Hasta 24 horas después del inicio de terapia efectiva.",
+    habitacion: "Individual preferida.",
+    epp: [
+      { icono: "😷", label: "Mascarilla quirúrgica" },
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+    ],
+    notas: [
+      "ENO (Enfermedades de Notificación Obligatoria): notificación inmediata.",
+      "Quimioprofilaxis para contactos y personal expuesto a secreciones respiratorias.",
+      "Consultar IAAS para profilaxis post-exposición laboral.",
+    ],
+    alertas: ["ENO: notificación inmediata obligatoria."],
+    pasos: []
+  },
+  {
+    id: 11,
+    nombre: "Pertussis / Tos ferina (Bordetella pertussis)",
+    tipo: ["gotas"],
+    tipoLabel: ["Gotitas"],
+    icono: "😮‍💨",
+    duracion: "Hasta 5 días después del inicio de antibioterapia eficaz.",
+    habitacion: "Individual preferida o cohorte.",
+    epp: [
+      { icono: "😷", label: "Mascarilla quirúrgica" },
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+    ],
+    notas: [
+      "Quimioprofilaxis para contactos domésticos y personal con exposición prolongada a secreciones respiratorias.",
+      "Vacuna Tdap recomendada en adultos.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 12,
+    nombre: "Streptococcus grupo A (faringitis, escarlatina, neumonía, enfermedad invasiva grave)",
+    tipo: ["gotas"],
+    tipoLabel: ["Gotitas"],
+    icono: "🔴",
+    duracion: "Hasta 24 horas después del inicio de terapia efectiva.",
+    habitacion: "Individual preferida o cohorte.",
+    epp: [
+      { icono: "😷", label: "Mascarilla quirúrgica" },
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+    ],
+    notas: [
+      "Agregar precauciones de CONTACTO si hay drenaje de heridas.",
+      "En enfermedad invasiva grave: se han descrito brotes de transmisión entre pacientes y personal.",
+      "Considerar profilaxis antimicrobiana en condiciones seleccionadas (consultar IAAS).",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 13,
+    nombre: "Rubéola",
+    tipo: ["gotas"],
+    tipoLabel: ["Gotitas"],
+    icono: "🔵",
+    duracion: "Hasta 7 días desde inicio de erupción.",
+    habitacion: "Individual.",
+    epp: [
+      { icono: "😷", label: "Mascarilla quirúrgica" },
+      { icono: "🧤", label: "Guantes" },
+    ],
+    notas: [
+      "Personal susceptible no debe atender si hay personal inmune.",
+      "Embarazadas no inmunes: no atender estos pacientes.",
+      "Profilaxis post-exposición: consultar IAAS.",
+    ],
+    alertas: ["Embarazadas no inmunes: evitar exposición."],
+    pasos: []
+  },
+  {
+    id: 14,
+    nombre: "Parotiditis (paperas)",
+    tipo: ["gotas"],
+    tipoLabel: ["Gotitas"],
+    icono: "🔵",
+    duracion: "Hasta 5 días desde inicio de la hinchazón.",
+    habitacion: "Individual o cohorte.",
+    epp: [
+      { icono: "😷", label: "Mascarilla quirúrgica" },
+      { icono: "🧤", label: "Guantes" },
+    ],
+    notas: ["A partir de 2018, la duración se redujo de 9 a 5 días."],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 15,
+    nombre: "Parvovirus B19 (eritema infeccioso, crisis aplásica)",
+    tipo: ["gotas"],
+    tipoLabel: ["Gotitas"],
+    icono: "🔵",
+    duracion: "Hospitalización si inmunocomprometido crónico. Crisis aplásica: 7 días.",
+    habitacion: "Individual preferida.",
+    epp: [
+      { icono: "😷", label: "Mascarilla quirúrgica" },
+      { icono: "🧤", label: "Guantes" },
+    ],
+    notas: [
+      "Embarazadas: riesgo de transmisión vertical. No atender si hay personal no embarazado disponible.",
+      "En pacientes inmunocomprometidos con PCR persistentemente positiva: puede transmitirse durante tiempo prolongado.",
+    ],
+    alertas: ["Embarazadas: evaluar riesgo de exposición."],
+    pasos: []
+  },
+  {
+    id: 16,
+    nombre: "Fiebres hemorrágicas virales (Lassa, Ébola, Marburg, Crimea-Congo)",
+    tipo: ["gotas", "contacto"],
+    tipoLabel: ["Gotitas", "Contacto"],
+    icono: "🚨",
+    duracion: "Duración de la enfermedad.",
+    habitacion: "Individual exclusiva.",
+    epp: [
+      { icono: "🔵", label: "KN95 o superior" },
+      { icono: "🧤", label: "Guantes (dobles)" },
+      { icono: "🥼", label: "Delantal" },
+      { icono: "🥽", label: "Protección ocular" },
+      { icono: "⚠️", label: "Dispositivos cortopunzantes de seguridad" },
+    ],
+    notas: [
+      "Ver recomendaciones CDC para Ébola en sitio web oficial.",
+      "Manejo de desechos con protocolo especial.",
+      "Mínimo personal en contacto con el paciente.",
+    ],
+    alertas: [
+      "NOTIFICACIÓN INMEDIATA a SEREMI y autoridad sanitaria.",
+      "Activar protocolo de emergencia institucional.",
+    ],
+    pasos: []
+  },
+  {
+    id: 17,
+    nombre: "Viruela del simio (Mpox)",
+    tipo: ["gotas", "contacto"],
+    tipoLabel: ["Gotitas", "Contacto"],
+    icono: "🐒",
+    duracion: "Hasta que todas las costras caigan y emerja piel sana (3–4 semanas).",
+    habitacion: "Individual.",
+    epp: [
+      { icono: "😷", label: "Mascarilla quirúrgica" },
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+    ],
+    notas: [
+      "Consultar sitio CDC Monkeypox para actualizaciones.",
+      "Notificar a SEREMI.",
+    ],
+    alertas: ["Notificación obligatoria."],
+    pasos: []
+  },
+  {
+    id: 18,
+    nombre: "Síndrome pulmonar por Hantavirus",
+    tipo: ["gotas"],
+    tipoLabel: ["Gotitas (+ Estándar reforzada)"],
+    icono: "🫁",
+    duracion: "Duración de la enfermedad.",
+    habitacion: "Individual.",
+    epp: [
+      { icono: "😷", label: "Mascarilla quirúrgica" },
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+    ],
+    notas: [
+      "En Sudamérica hay evidencia de transmisión persona a persona.",
+      "Se implementan precauciones adicionales a lo recomendado por CDC (que indica solo Estándar para otros contextos).",
+    ],
+    alertas: [],
+    pasos: []
+  },
+
+  // ==================== CONTACTO ====================
+  {
+    id: 19,
+    nombre: "Clostridioides difficile (CDI)",
+    tipo: ["contacto"],
+    tipoLabel: ["Contacto"],
+    icono: "🦠",
+    duracion: "Hasta recuperación clínica + 30 días post-antibiótico. En recaídas con hospitalización prolongada: hasta el alta.",
+    habitacion: "Individual exclusiva con baño. Si cohorte: baño exclusivo.",
+    epp: [
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal / Pechera impermeable" },
+    ],
+    notas: [
+      "Desinfección ambiental con CLORO 5.000 ppm (no usar amonio cuaternario).",
+      "No compartir termómetros electrónicos.",
+      "Suspender antibióticos si corresponde.",
+      "No se requiere loza desechable ni manejo especial de ropa de cama.",
+    ],
+    alertas: [
+      "LAVADO DE MANOS CON AGUA Y JABÓN obligatorio. El alcohol NO es esporicida.",
+    ],
+    pasos: [
+      "Colocarse guantes y delantal antes de entrar.",
+      "Atención clínica con cuidado de no contaminar superficies.",
+      "Retirar guantes y delantal dentro de la habitación.",
+      "Lavarse las manos con agua y jabón (no solo alcohol gel).",
+      "Abrir puerta con toalla de papel.",
+      "Volver a lavarse las manos al salir.",
+    ]
+  },
+  {
+    id: 20,
+    nombre: "KPC / NDM / OXA (Carbapenemasas)",
+    tipo: ["contacto"],
+    tipoLabel: ["Contacto (reforzado)"],
+    icono: "⚠️",
+    duracion: "INDEFINIDO. Reevaluar tras 1-2 años libres de hospitalizaciones, antibioterapia y dispositivos invasivos.",
+    habitacion: "Individual EXCLUSIVA con baño. Personal exclusivo cuando sea posible.",
+    epp: [
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+      { icono: "🩺", label: "Pechera impermeable" },
+    ],
+    notas: [
+      "Baño con jabón de clorhexidina 2% días alternos hasta el alta.",
+      "Desinfección con cloro 1.000 ppm 2 veces al día.",
+      "Screening microbiológico de contactos (BAI rectal/perianal).",
+      "No se requiere loza desechable.",
+      "Al egreso: consignar en epicrisis y carné de alta.",
+    ],
+    alertas: [
+      "Habitación individual + personal exclusivo: obligatorios.",
+      "Duración INDEFINIDA. Asumir colonización permanente.",
+      "Al reingresar: reimplementar INMEDIATAMENTE, sin esperar cultivos.",
+    ],
+    pasos: [
+      "Colocarse guantes + delantal + pechera al entrar.",
+      "Usar equipo exclusivo del paciente (termómetro, esfigmo, etc.).",
+      "Retirar EPP dentro de la habitación.",
+      "Higienizar manos prolijo con alcohol gel.",
+      "Abrir puerta con toalla de papel.",
+      "Higienizar manos nuevamente al salir.",
+    ]
+  },
+  {
+    id: 21,
+    nombre: "SAMR (Staphylococcus aureus resistente a meticilina)",
+    tipo: ["contacto"],
+    tipoLabel: ["Contacto"],
+    icono: "🔶",
+    duracion: "Indefinido. Asumir colonización permanente.",
+    habitacion: "Individual preferida o cohorte.",
+    epp: [
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal / Pechera impermeable" },
+    ],
+    notas: [
+      "Baño con clorhexidina 2% días alternos.",
+      "Desinfección con cloro 1.000 ppm.",
+      "Al reingresar al hospital: reimplementar precauciones inmediatamente.",
+    ],
+    alertas: ["Colonización puede persistir >1 año. Asumir permanente."],
+    pasos: []
+  },
+  {
+    id: 22,
+    nombre: "VRE / ERV (Enterococcus resistente a vancomicina)",
+    tipo: ["contacto"],
+    tipoLabel: ["Contacto"],
+    icono: "🟡",
+    duracion: "Hasta 6 meses post-alta sin hospitalizaciones intermedias en otras instituciones.",
+    habitacion: "Individual preferida o cohorte.",
+    epp: [
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal / Pechera impermeable" },
+    ],
+    notas: [
+      "Baño con clorhexidina 2% días alternos.",
+      "Colonización puede persistir >1 año.",
+      "Al reingresar: reimplementar precauciones.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 23,
+    nombre: "BLEE (Gram negativos con β-lactamasas de espectro extendido)",
+    tipo: ["contacto"],
+    tipoLabel: ["Contacto"],
+    icono: "🟠",
+    duracion: "Indefinido. Asumir colonización permanente.",
+    habitacion: "Individual o cohorte.",
+    epp: [
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+    ],
+    notas: [
+      "Desinfección cloro 1.000 ppm.",
+      "Baño con clorhexidina días alternos.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 24,
+    nombre: "Norovirus (diarrea / gastroenteritis)",
+    tipo: ["contacto"],
+    tipoLabel: ["Contacto"],
+    icono: "🤢",
+    duracion: "Mínimo 48 horas post-resolución de síntomas.",
+    habitacion: "Individual exclusiva con baño. Baño exclusivo si cohorte.",
+    epp: [
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+      { icono: "😷", label: "Mascarilla (si riesgo de vómitos)" },
+      { icono: "🥽", label: "Protección ocular (si riesgo salpicaduras)" },
+    ],
+    notas: [
+      "Cloro 5.000 ppm en baños y zonas húmedas: 3 veces al día.",
+      "Personal afectado: retiro de la atención clínica hasta 48 h recuperado. En brotes: hasta finalizar el brote.",
+      "Suspender visitas hasta cese del cuadro.",
+      "Retirar textiles y elementos no desinfectables para lavado.",
+      "Revisar y eliminar alimentos antiguos o compartidos del staff.",
+    ],
+    alertas: [
+      "LAVADO DE MANOS CON AGUA Y JABÓN. El alcohol es menos efectivo contra norovirus.",
+      "El vómito es de alto riesgo (aerosolización del virus).",
+    ],
+    pasos: [
+      "Colocarse guantes + delantal + mascarilla (si hay riesgo de vómitos) antes de entrar.",
+      "Manejo cuidadoso de vómitos y heces.",
+      "Retirar EPP dentro de la habitación.",
+      "Lavarse las manos con agua y jabón.",
+      "Desinfectar inmediatamente las superficies contaminadas con cloro 5.000 ppm.",
+    ]
+  },
+  {
+    id: 25,
+    nombre: "VRS (Virus sincitial respiratorio) — lactantes, niños, inmunocomprometidos",
+    tipo: ["contacto"],
+    tipoLabel: ["Contacto"],
+    icono: "👶",
+    duracion: "Duración de la enfermedad. Prolongar en inmunocomprometidos según excreción viral.",
+    habitacion: "Individual o cohorte.",
+    epp: [
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+      { icono: "😷", label: "Mascarilla quirúrgica" },
+    ],
+    notas: [
+      "El contacto directo con secreciones respiratorias es la vía más importante de transmisión.",
+      "Excreción viral puede prolongarse semanas en inmunocomprometidos.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 26,
+    nombre: "Parainfluenza / Metapneumovirus humano",
+    tipo: ["contacto"],
+    tipoLabel: ["Contacto"],
+    icono: "🫁",
+    duracion: "Duración de la enfermedad.",
+    habitacion: "Individual o cohorte.",
+    epp: [
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+      { icono: "😷", label: "Mascarilla quirúrgica" },
+    ],
+    notas: [
+      "Excreción viral puede prolongarse en inmunocomprometidos.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 27,
+    nombre: "Sarna (escabiosis)",
+    tipo: ["contacto"],
+    tipoLabel: ["Contacto"],
+    icono: "🟤",
+    duracion: "Hasta 24 horas después del inicio de terapia efectiva.",
+    habitacion: "Individual o cohorte.",
+    epp: [
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal (manga larga)" },
+    ],
+    notas: [
+      "Lavado de ropa de cama y ropa personal.",
+      "En sarna noruega (costrosa): medidas más estrictas, consultar IAAS.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 28,
+    nombre: "Rotavirus (diarrea)",
+    tipo: ["contacto"],
+    tipoLabel: ["Contacto"],
+    icono: "🟢",
+    duracion: "Duración de la enfermedad.",
+    habitacion: "Individual o cohorte.",
+    epp: [
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+    ],
+    notas: [
+      "Excreción prolongada en niños inmunocomprometidos y ancianos.",
+      "Eliminación frecuente de pañales sucios. Limpieza ambiental consistente.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 29,
+    nombre: "Hepatitis A en pacientes incontinentes o con pañales",
+    tipo: ["contacto"],
+    tipoLabel: ["Contacto"],
+    icono: "🟡",
+    duracion: ">14 años: 2 semanas post inicio síntomas. Niños: 1 semana.",
+    habitacion: "Individual o cohorte.",
+    epp: [
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+    ],
+    notas: [
+      "Contactos requieren vacuna. Notificar a epidemiología.",
+      "En pacientes continentes adultos: solo precauciones Estándar.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 30,
+    nombre: "Absceso con drenaje abundante (no contenible con apósito)",
+    tipo: ["contacto"],
+    tipoLabel: ["Contacto"],
+    icono: "🩹",
+    duracion: "Hasta que el drenaje se detenga o se contenga con un vendaje.",
+    habitacion: "Individual preferida.",
+    epp: [
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal / Pechera" },
+    ],
+    notas: [
+      "Si el apósito cubre y contiene el drenaje: solo Precauciones Estándar.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 31,
+    nombre: "Pediculosis (piojos de cabeza)",
+    tipo: ["contacto"],
+    tipoLabel: ["Contacto"],
+    icono: "🪲",
+    duracion: "Hasta 24 horas después del inicio de tratamiento efectivo.",
+    habitacion: "Individual o cohorte.",
+    epp: [
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+    ],
+    notas: [],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 32,
+    nombre: "Conjuntivitis viral aguda hemorrágica",
+    tipo: ["contacto"],
+    tipoLabel: ["Contacto"],
+    icono: "👁️",
+    duracion: "Duración de la enfermedad.",
+    habitacion: "Individual o cohorte.",
+    epp: [
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+    ],
+    notas: [
+      "Altamente contagiosa. Control riguroso del instrumental oftalmológico.",
+      "Brotes en clínicas oftalmológicas y entornos pediátricos.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+
+  // ==================== SOLO ESTÁNDAR ====================
+  {
+    id: 33,
+    nombre: "VIH / SIDA",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🩺",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [
+      { icono: "🧤", label: "Guantes según procedimiento" },
+    ],
+    notas: [
+      "Quimioprofilaxis post-exposición para exposiciones a sangre (accidentes cortopunzantes): activar protocolo institucional.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 34,
+    nombre: "Hepatitis B / C / D / G (y otras hepatitis virales)",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🩺",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [
+      { icono: "🧤", label: "Guantes según procedimiento" },
+    ],
+    notas: [
+      "Hepatitis B: contactos requieren vacuna. Notificar IAAS.",
+      "Hepatitis E en pacientes incontinentes: agregar Precauciones de Contacto.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 35,
+    nombre: "Infección urinaria (ITU) con o sin catéter",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🩺",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [
+      { icono: "🧤", label: "Guantes según procedimiento" },
+    ],
+    notas: ["Manejo habitual con precauciones estándar."],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 36,
+    nombre: "TBC extrapulmonar sin drenaje (meningitis tuberculosa, ganglionar)",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🩺",
+    duracion: "N/A (a menos que coexista TBC pulmonar o lesión drenante).",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [
+      { icono: "🧤", label: "Guantes" },
+      { icono: "😷", label: "Mascarilla según procedimiento" },
+    ],
+    notas: [
+      "Buscar activamente TBC pulmonar activa concomitante.",
+      "En niños: precauciones aéreas hasta descartar TBC pulmonar en visitas familiares.",
+      "Notificar Programa Local de TBC.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 37,
+    nombre: "Herpes simplex mucocutáneo recurrente (oral, genital)",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🩺",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [
+      { icono: "🧤", label: "Guantes en contacto con lesiones" },
+    ],
+    notas: [
+      "Herpes neonatal o diseminado severo: agregar Precauciones de Contacto.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 38,
+    nombre: "Neumonía neumocócica (S. pneumoniae)",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🫁",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [
+      { icono: "🧤", label: "Guantes según procedimiento" },
+      { icono: "😷", label: "Mascarilla quirúrgica si riesgo salpicaduras" },
+    ],
+    notas: [
+      "Agregar Precauciones de Gotitas si hay evidencia de transmisión en la unidad.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 39,
+    nombre: "Legionelosis (Legionella spp.)",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🩺",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [
+      { icono: "🧤", label: "Guantes según procedimiento" },
+    ],
+    notas: [
+      "No se transmite de persona a persona. La fuente es ambiental (agua, sistemas de ventilación).",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 40,
+    nombre: "Enfermedad de Creutzfeldt-Jakob (ECJ / vECJ)",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🧠",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [
+      { icono: "🧤", label: "Guantes en procedimientos con tejido neural" },
+      { icono: "🥼", label: "Delantal" },
+    ],
+    notas: [
+      "Instrumentos desechables o esterilización/desinfección especial para material contaminado con tejido neural.",
+      "No se transmite por contacto casual ni aerosoles.",
+    ],
+    alertas: [
+      "Manejo especial de instrumental neurológico obligatorio.",
+    ],
+    pasos: []
+  },
+
+  // ==================== FALTANTES DE TABLA N°1 - AÉREA ====================
+  {
+    id: 51,
+    nombre: "Herpes Zoster localizado (inmunocompetente, lesiones contenibles)",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🟣",
+    duracion: "Hasta que las lesiones se sequen y formen costra.",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [{ icono: "🧤", label: "Guantes en contacto con lesiones" }],
+    notas: [
+      "Si las lesiones pueden ser cubiertas: solo Precauciones Estándar.",
+      "Personal susceptible no debe brindar atención directa cuando hay cuidadores inmunes disponibles.",
+      "Si diseminado o en inmunocomprometido: agregar Precauciones Aéreas + Contacto.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+
+  // ==================== FALTANTES TABLA N°1 - CONTACTO ====================
+  {
+    id: 52,
+    nombre: "Absceso drenando poco o limitado",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🩹",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [{ icono: "🧤", label: "Guantes" }],
+    notas: ["Si el apósito cubre y contiene el drenaje: solo Precauciones Estándar."],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 53,
+    nombre: "Adenovirus (ADV) — diarrea",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🦠",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [{ icono: "🧤", label: "Guantes" }],
+    notas: [
+      "Usar Precauciones de Contacto para personas con pañales o incontinencia durante la duración de la enfermedad, o para controlar brotes institucionales.",
+      "Para neumonía por ADV: ver entrada específica (Gotitas + Contacto).",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 54,
+    nombre: "Adenovirus (ADV) — neumonía",
+    tipo: ["gotas", "contacto"],
+    tipoLabel: ["Gotitas", "Contacto"],
+    icono: "🦠",
+    duracion: "Duración de la enfermedad. En inmunocomprometidos: prolongar por diseminación viral prolongada.",
+    habitacion: "Individual o cohorte.",
+    epp: [
+      { icono: "😷", label: "Mascarilla quirúrgica" },
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+    ],
+    notas: [
+      "Se informaron brotes en entornos pediátricos e institucionales.",
+      "En huéspedes inmunocomprometidos: prolongar duración de las precauciones.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 55,
+    nombre: "Astrovirus — diarrea",
+    tipo: ["contacto"],
+    tipoLabel: ["Contacto"],
+    icono: "🦠",
+    duracion: "Duración de la enfermedad.",
+    habitacion: "Individual o cohorte.",
+    epp: [
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+    ],
+    notas: [],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 56,
+    nombre: "Bocavirus — infección por",
+    tipo: ["gotas", "contacto"],
+    tipoLabel: ["Gotitas", "Contacto"],
+    icono: "🦠",
+    duracion: "Duración de la enfermedad.",
+    habitacion: "Individual o cohorte.",
+    epp: [
+      { icono: "😷", label: "Mascarilla quirúrgica" },
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+    ],
+    notas: [],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 57,
+    nombre: "Bronquiolitis (Infecciones respiratorias en bebés y niños pequeños)",
+    tipo: ["contacto"],
+    tipoLabel: ["Contacto"],
+    icono: "👶",
+    duracion: "Duración de la enfermedad.",
+    habitacion: "Individual o cohorte.",
+    epp: [
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+      { icono: "😷", label: "Mascarilla según precauciones estándar" },
+    ],
+    notas: ["Usar mascarilla de acuerdo con las precauciones estándar."],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 58,
+    nombre: "Campylobacter — diarrea",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🦠",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [{ icono: "🧤", label: "Guantes" }],
+    notas: [
+      "Usar Precauciones de Contacto para personas con pañales o incontinencia durante la duración de la enfermedad o para controlar brotes institucionales.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 59,
+    nombre: "Candidiasis (excepto C. auris)",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🍄",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [{ icono: "🧤", label: "Guantes según procedimiento" }],
+    notas: [
+      "Candida auris se maneja como MDRO (ver entrada específica).",
+      "Resto de especies de Candida: solo Precauciones Estándar.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 60,
+    nombre: "Celulitis",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🩺",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [{ icono: "🧤", label: "Guantes" }],
+    notas: [],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 61,
+    nombre: "Chlamydia trachomatis — genital / linfogranuloma venéreo",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🩺",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [{ icono: "🧤", label: "Guantes según procedimiento" }],
+    notas: [],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 62,
+    nombre: "Chlamydia trachomatis — conjuntivitis",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "👁️",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [{ icono: "🧤", label: "Guantes" }],
+    notas: [],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 63,
+    nombre: "Chlamydophila pneumoniae",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🫁",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [{ icono: "🧤", label: "Guantes" }, { icono: "😷", label: "Mascarilla quirúrgica" }],
+    notas: ["Rara vez se informaron brotes en poblaciones institucionalizadas."],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 64,
+    nombre: "Clostridium botulinum / botulismo",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🩺",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [{ icono: "🧤", label: "Guantes según procedimiento" }],
+    notas: ["No se transmite de persona a persona."],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 65,
+    nombre: "Clostridium perfringens — gangrena gaseosa",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🩺",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [{ icono: "🧤", label: "Guantes" }, { icono: "🥼", label: "Delantal" }],
+    notas: [
+      "Transmisión de persona a persona rara; se notificó 1 brote en entorno quirúrgico.",
+      "Usar Precauciones de Contacto si el drenaje de la herida es extenso.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 66,
+    nombre: "CMV (Citomegalovirus) — incluso en recién nacidos e inmunocomprometidos",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🩺",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [{ icono: "🧤", label: "Guantes según procedimiento" }],
+    notas: [
+      "No hay precauciones adicionales para trabajadores sanitarios embarazadas.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 67,
+    nombre: "Conjuntivitis bacteriana aguda / gonocócica",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "👁️",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [{ icono: "🧤", label: "Guantes" }],
+    notas: [],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 68,
+    nombre: "Coronavirus estacionales (229E-CoV, NL63-CoV, OC43-CoV, HKU1-CoV)",
+    tipo: ["gotas"],
+    tipoLabel: ["Gotitas"],
+    icono: "🦠",
+    duracion: "Duración de la enfermedad.",
+    habitacion: "Individual o separación ≥1 m.",
+    epp: [
+      { icono: "😷", label: "Mascarilla quirúrgica" },
+      { icono: "🧤", label: "Guantes" },
+    ],
+    notas: [],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 69,
+    nombre: "Cryptosporidium — diarrea",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🦠",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [{ icono: "🧤", label: "Guantes" }],
+    notas: [
+      "Usar Precauciones de Contacto para personas con pañales o incontinencia durante la duración de la enfermedad o para controlar brotes institucionales.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 70,
+    nombre: "Dengue",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🩺",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [{ icono: "🧤", label: "Guantes según procedimiento" }],
+    notas: ["No se transmite de persona a persona (requiere vector)."],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 71,
+    nombre: "Difteria cutánea",
+    tipo: ["contacto"],
+    tipoLabel: ["Contacto"],
+    icono: "🦠",
+    duracion: "Hasta que finalice el tratamiento antimicrobiano y 2 cultivos negativos tomados con 24 h de diferencia.",
+    habitacion: "Individual o cohorte.",
+    epp: [
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+    ],
+    notas: [],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 72,
+    nombre: "Difteria faríngea",
+    tipo: ["gotas"],
+    tipoLabel: ["Gotitas"],
+    icono: "🦠",
+    duracion: "Hasta que no haya tratamiento antimicrobiano y 2 cultivos negativos con 24 h de diferencia.",
+    habitacion: "Individual.",
+    epp: [
+      { icono: "😷", label: "Mascarilla quirúrgica" },
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+    ],
+    notas: [],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 73,
+    nombre: "E. coli O157:H7 y otras productoras de toxina Shiga — diarrea",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🦠",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [{ icono: "🧤", label: "Guantes" }],
+    notas: [
+      "Usar Precauciones de Contacto para personas con pañales o incontinencia durante la duración de la enfermedad o para controlar brotes institucionales.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 74,
+    nombre: "E. coli no O157 — diarrea",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🦠",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [{ icono: "🧤", label: "Guantes" }],
+    notas: [
+      "Usar Precauciones de Contacto para personas con pañales o incontinencia durante la duración de la enfermedad o para controlar brotes institucionales.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 75,
+    nombre: "Epiglotitis por Haemophilus influenzae tipo b",
+    tipo: ["gotas"],
+    tipoLabel: ["Gotitas"],
+    icono: "🦠",
+    duracion: "Hasta 24 horas después del inicio de terapia efectiva.",
+    habitacion: "Individual preferida.",
+    epp: [
+      { icono: "😷", label: "Mascarilla quirúrgica" },
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+    ],
+    notas: [],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 76,
+    nombre: "Enfermedad estafilocócica (S. aureus) — piel, herida o quemadura extensa",
+    tipo: ["contacto"],
+    tipoLabel: ["Contacto"],
+    icono: "🦠",
+    duracion: "Duración de la enfermedad. Hasta que se detenga el drenaje o se contenga con vendaje.",
+    habitacion: "Individual o cohorte.",
+    epp: [
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal / Pechera" },
+    ],
+    notas: ["Para SAMR: ver entrada específica SAMR."],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 77,
+    nombre: "Enfermedad estafilocócica (S. aureus) — síndrome de piel escaldada",
+    tipo: ["contacto"],
+    tipoLabel: ["Contacto"],
+    icono: "🦠",
+    duracion: "Duración de la enfermedad.",
+    habitacion: "Individual o cohorte.",
+    epp: [
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+    ],
+    notas: [
+      "Considerar al personal de atención médica como fuente potencial de brotes en sala de recién nacidos y UCIN.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 78,
+    nombre: "Enfermedad estafilocócica (S. aureus) — neumonía / enterocolitis / shock tóxico",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🦠",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [{ icono: "🧤", label: "Guantes según procedimiento" }],
+    notas: [
+      "Para piel/herida/quemadura menor con apósito que contenga el drenaje: solo Estándar.",
+      "Para SAMR: ver entrada específica.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 79,
+    nombre: "Enfermedad estreptocócica (Strep. grupo A) — piel, herida o quemadura extensa",
+    tipo: ["contacto", "gotas"],
+    tipoLabel: ["Contacto", "Gotitas"],
+    icono: "🦠",
+    duracion: "Hasta 24 horas después del inicio de terapia efectiva. Hasta que drenaje cese.",
+    habitacion: "Individual o cohorte.",
+    epp: [
+      { icono: "😷", label: "Mascarilla quirúrgica" },
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+    ],
+    notas: [],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 80,
+    nombre: "Enfermedad estreptocócica (Strep. grupo B) — neonatal",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🦠",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [{ icono: "🧤", label: "Guantes" }],
+    notas: [],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 81,
+    nombre: "Enfermedad meningocócica — sepsis, neumonía, meningitis",
+    tipo: ["gotas"],
+    tipoLabel: ["Gotitas"],
+    icono: "🧠",
+    duracion: "Hasta 24 horas después del inicio de terapia efectiva.",
+    habitacion: "Individual preferida.",
+    epp: [
+      { icono: "😷", label: "Mascarilla quirúrgica" },
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+    ],
+    notas: [
+      "ENO inmediata.",
+      "Quimioprofilaxis posterior a la exposición para contactos domésticos y trabajadores de salud expuestos a secreciones respiratorias.",
+      "Contactar a Epidemiología.",
+    ],
+    alertas: ["ENO: notificación inmediata obligatoria."],
+    pasos: []
+  },
+  {
+    id: 82,
+    nombre: "Enterocolitis necrotizante",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🩺",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial (agregar Contacto si casos se agrupan temporalmente).",
+    epp: [{ icono: "🧤", label: "Guantes" }],
+    notas: ["Precauciones de Contacto cuando los casos se agrupan temporalmente."],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 83,
+    nombre: "Forunculosis estafilocócica — adultos",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🩺",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [{ icono: "🧤", label: "Guantes en contacto con lesiones" }],
+    notas: ["Agregar Contacto si el drenaje no está controlado o si es SAMR."],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 84,
+    nombre: "Forunculosis estafilocócica — bebés y niños pequeños",
+    tipo: ["contacto"],
+    tipoLabel: ["Contacto"],
+    icono: "👶",
+    duracion: "Duración de la enfermedad (con lesiones de heridas, hasta que las heridas dejen de supurar).",
+    habitacion: "Individual o cohorte.",
+    epp: [
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+    ],
+    notas: [],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 85,
+    nombre: "Gastroenteritis / diarrea viral (no especificada en otros agentes)",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🤢",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [{ icono: "🧤", label: "Guantes" }],
+    notas: [
+      "Usar Precauciones de Contacto para personas con pañales o incontinencia durante la duración de la enfermedad o para controlar brotes institucionales.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 86,
+    nombre: "Giardia lamblia — diarrea",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🦠",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [{ icono: "🧤", label: "Guantes" }],
+    notas: [
+      "Usar Precauciones de Contacto para personas con pañales o incontinencia durante la duración de la enfermedad o para controlar brotes institucionales.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 87,
+    nombre: "Hepatitis E",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🩺",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [{ icono: "🧤", label: "Guantes" }],
+    notas: [
+      "Usar Precauciones de Contacto para personas con pañales o incontinencia mientras dure la enfermedad.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 88,
+    nombre: "Herpes simplex — neonatal",
+    tipo: ["contacto"],
+    tipoLabel: ["Contacto"],
+    icono: "👶",
+    duracion: "Hasta que las lesiones se sequen y formen costras.",
+    habitacion: "Individual o cohorte.",
+    epp: [
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+    ],
+    notas: [],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 89,
+    nombre: "Herpes simplex — mucocutáneo diseminado o primario severo",
+    tipo: ["contacto"],
+    tipoLabel: ["Contacto"],
+    icono: "🟣",
+    duracion: "Hasta que las lesiones se sequen y formen costras.",
+    habitacion: "Individual o cohorte.",
+    epp: [
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+    ],
+    notas: [],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 90,
+    nombre: "Impétigo",
+    tipo: ["contacto"],
+    tipoLabel: ["Contacto"],
+    icono: "🦠",
+    duracion: "Hasta 24 horas después del inicio de terapia efectiva.",
+    habitacion: "Individual o cohorte.",
+    epp: [
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+    ],
+    notas: [],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 91,
+    nombre: "Infección de herida extensa",
+    tipo: ["contacto"],
+    tipoLabel: ["Contacto"],
+    icono: "🩹",
+    duracion: "Duración de la enfermedad. Hasta que se detenga el drenaje o se contenga con vendaje.",
+    habitacion: "Individual o cohorte.",
+    epp: [
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal / Pechera" },
+    ],
+    notas: [],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 92,
+    nombre: "Infección de herida pequeña o limitada",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🩹",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [{ icono: "🧤", label: "Guantes" }],
+    notas: ["Si el apósito cubre y contiene el drenaje adecuadamente."],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 93,
+    nombre: "Infección respiratoria aguda en niños (no especificada en otros agentes)",
+    tipo: ["contacto"],
+    tipoLabel: ["Contacto"],
+    icono: "👶",
+    duracion: "Duración de la enfermedad.",
+    habitacion: "Individual o cohorte.",
+    epp: [
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+      { icono: "😷", label: "Mascarilla quirúrgica" },
+    ],
+    notas: [],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 94,
+    nombre: "Infecciones enterovirales (Coxsackie A y B, Echovirus) — excluye poliomielitis",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🦠",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [{ icono: "🧤", label: "Guantes" }],
+    notas: [
+      "Usar Precauciones de Contacto para niños con pañales o incontinencia durante la duración de la enfermedad y para controlar los brotes institucionales.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 95,
+    nombre: "Influenza aviar (cepas H5N1, H7, H9)",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar — seguir lineamientos autoridad sanitaria"],
+    icono: "🐦",
+    duracion: "N/A — en caso de detección de casos, seguir lineamientos de autoridad sanitaria.",
+    habitacion: "Según instrucción SEREMI/MINSAL.",
+    epp: [{ icono: "🔵", label: "Según lineamientos SEREMI/MINSAL" }],
+    notas: [
+      "En caso de detección de casos: seguir lineamientos de la autoridad sanitaria y notificación inmediata.",
+    ],
+    alertas: ["Notificar inmediatamente a SEREMI ante caso sospechoso."],
+    pasos: []
+  },
+  {
+    id: 96,
+    nombre: "Meningitis aséptica (viral) — no bacteriana",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🧠",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [{ icono: "🧤", label: "Guantes" }],
+    notas: [
+      "Contacto para bebés y niños pequeños.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 97,
+    nombre: "Meningitis por Haemophilus influenzae tipo b",
+    tipo: ["gotas"],
+    tipoLabel: ["Gotitas"],
+    icono: "🧠",
+    duracion: "Hasta 24 horas después del inicio de terapia efectiva.",
+    habitacion: "Individual preferida.",
+    epp: [
+      { icono: "😷", label: "Mascarilla quirúrgica" },
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+    ],
+    notas: [],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 98,
+    nombre: "Meningitis por hongos / Listeria / otras bacterias / S. pneumoniae",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🧠",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [{ icono: "🧤", label: "Guantes" }],
+    notas: [],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 99,
+    nombre: "Metapneumovirus humano",
+    tipo: ["contacto"],
+    tipoLabel: ["Contacto"],
+    icono: "🫁",
+    duracion: "Duración de la enfermedad.",
+    habitacion: "Individual o cohorte.",
+    epp: [
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+      { icono: "😷", label: "Mascarilla quirúrgica" },
+    ],
+    notas: [
+      "Mecanismo de transmisión similar a VRS. Usar mascarilla de acuerdo con precauciones estándar.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 100,
+    nombre: "Mycobacterias no tuberculosas (atípicas) — pulmonar o de heridas",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🫁",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [{ icono: "🧤", label: "Guantes según procedimiento" }],
+    notas: [],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 101,
+    nombre: "Neumonía por Haemophilus influenzae tipo b — niños",
+    tipo: ["gotas"],
+    tipoLabel: ["Gotitas"],
+    icono: "👶",
+    duracion: "Hasta 24 horas después del inicio de terapia efectiva.",
+    habitacion: "Individual o cohorte.",
+    epp: [
+      { icono: "😷", label: "Mascarilla quirúrgica" },
+      { icono: "🧤", label: "Guantes" },
+    ],
+    notas: [],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 102,
+    nombre: "Neumonía por Mycoplasma (neumonía atípica primaria)",
+    tipo: ["gotas"],
+    tipoLabel: ["Gotitas"],
+    icono: "🫁",
+    duracion: "Duración de la enfermedad.",
+    habitacion: "Individual o cohorte.",
+    epp: [
+      { icono: "😷", label: "Mascarilla quirúrgica" },
+      { icono: "🧤", label: "Guantes" },
+    ],
+    notas: [],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 103,
+    nombre: "Neumonía por B. cepacia — pacientes con fibrosis quística (FQ)",
+    tipo: ["contacto"],
+    tipoLabel: ["Contacto"],
+    icono: "🫁",
+    duracion: "Desconocida.",
+    habitacion: "Individual preferida.",
+    epp: [
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+    ],
+    notas: [
+      "Evitar la exposición a otras personas con FQ.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 104,
+    nombre: "Neumonía meningocócica",
+    tipo: ["gotas"],
+    tipoLabel: ["Gotitas"],
+    icono: "🧠",
+    duracion: "Hasta 24 horas después del inicio de terapia efectiva.",
+    habitacion: "Individual preferida.",
+    epp: [
+      { icono: "😷", label: "Mascarilla quirúrgica" },
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+    ],
+    notas: [
+      "Ver entrada Enfermedad meningocócica. ENO inmediata. Quimioprofilaxis para contactos.",
+    ],
+    alertas: ["ENO inmediata obligatoria."],
+    pasos: []
+  },
+  {
+    id: 105,
+    nombre: "Parechovirus — infección SNC",
+    tipo: ["gotas", "contacto"],
+    tipoLabel: ["Gotitas", "Contacto"],
+    icono: "🦠",
+    duracion: "Hasta 48 horas de resueltos los síntomas.",
+    habitacion: "Individual o cohorte.",
+    epp: [
+      { icono: "😷", label: "Mascarilla quirúrgica" },
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+    ],
+    notas: [
+      "Transmisión por gotitas y por heces.",
+      "No enviar a sala cuna o jardín infantil hasta 48 h de resueltos los síntomas.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 106,
+    nombre: "Pediculosis — piojos del cuerpo / piojos púbicos",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🪲",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal (al retirar la ropa)" },
+    ],
+    notas: [
+      "Se transmite a través de la ropa infestada.",
+      "Usar bata y guantes al quitarse la ropa; embolsar la ropa y señalizarla.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 107,
+    nombre: "Peste neumónica (Yersinia pestis)",
+    tipo: ["gotas"],
+    tipoLabel: ["Gotitas"],
+    icono: "⚠️",
+    duracion: "Hasta 48 horas después del inicio de terapia antibiótica eficaz.",
+    habitacion: "Individual.",
+    epp: [
+      { icono: "😷", label: "Mascarilla quirúrgica" },
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+    ],
+    notas: ["Consultar a epidemiología para profilaxis post-exposición laboral."],
+    alertas: ["Notificación obligatoria. Consultar epidemiología."],
+    pasos: []
+  },
+  {
+    id: 108,
+    nombre: "Poliomielitis",
+    tipo: ["contacto"],
+    tipoLabel: ["Contacto"],
+    icono: "🦠",
+    duracion: "Duración de la enfermedad.",
+    habitacion: "Individual o cohorte.",
+    epp: [
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+    ],
+    notas: [],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 109,
+    nombre: "Rinovirus",
+    tipo: ["gotas"],
+    tipoLabel: ["Gotitas"],
+    icono: "🦠",
+    duracion: "Duración de la enfermedad.",
+    habitacion: "Separación ≥1 m.",
+    epp: [
+      { icono: "😷", label: "Mascarilla quirúrgica" },
+      { icono: "🧤", label: "Guantes" },
+    ],
+    notas: [
+      "Gotita es la ruta de transmisión más importante.",
+      "Se han producido brotes en UCIN y centros de hospitalización de largo plazo.",
+      "Agregar Precauciones de Contacto si es probable que ocurran abundantes secreciones húmedas y contacto cercano (p. ej., bebés pequeños).",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 110,
+    nombre: "Rubéola congénita",
+    tipo: ["contacto"],
+    tipoLabel: ["Contacto"],
+    icono: "👶",
+    duracion: "Hasta 1 año (o hasta que cultivos nasofaríngeos y de orina sean repetidamente negativos post 3 meses de edad).",
+    habitacion: "Individual o cohorte.",
+    epp: [
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+    ],
+    notas: [],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 111,
+    nombre: "Salmonella (incluyendo S. typhi) — diarrea",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🦠",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [{ icono: "🧤", label: "Guantes" }],
+    notas: [
+      "Usar Precauciones de Contacto para personas con pañales o incontinencia durante la duración de la enfermedad o para controlar brotes institucionales.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 112,
+    nombre: "Shigella (disentería bacilar) — diarrea",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🦠",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [{ icono: "🧤", label: "Guantes" }],
+    notas: [
+      "Usar Precauciones de Contacto para personas con pañales o incontinencia durante la duración de la enfermedad o para controlar brotes institucionales.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 113,
+    nombre: "Síndrome de shock tóxico (estafilocócico / estreptocócico)",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🩺",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [{ icono: "🧤", label: "Guantes" }],
+    notas: [
+      "Precauciones por Gotitas durante las primeras 24 horas si Streptococcus grupo A es etiología probable.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 114,
+    nombre: "Síndrome respiratorio agudo severo SARS-CoV-2 — ver COVID-19",
+    tipo: ["aereo", "gotas", "contacto"],
+    tipoLabel: ["Aérea", "Gotitas", "Contacto"],
+    icono: "🦠",
+    duracion: "10 días en asintomático, 14 en leve, 21 en inmunocomprometidos y graves (VMI).",
+    habitacion: "Individual exclusiva con baño. Puerta cerrada.",
+    epp: [
+      { icono: "🔵", label: "KN95" },
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+      { icono: "🥽", label: "Antiparra o escudo" },
+    ],
+    notas: ["Ver entrada COVID-19 / SARS-CoV-2 para detalles completos."],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 115,
+    nombre: "TBC — meningitis tuberculosa (sin drenaje / extrapulmonar sin drenaje)",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🧠",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [{ icono: "🧤", label: "Guantes" }],
+    notas: [
+      "Buscar evidencia de tuberculosis pulmonar activa concomitante.",
+      "Para bebés y niños: usar Precauciones Aéreas hasta descartar TBC pulmonar en visitas familiares.",
+      "Notificar al Programa Local de TBC.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 116,
+    nombre: "Úlcera por presión infectada — extensa",
+    tipo: ["contacto"],
+    tipoLabel: ["Contacto"],
+    icono: "🩹",
+    duracion: "Duración de la enfermedad. Hasta que el drenaje se detenga o se contenga con vendaje.",
+    habitacion: "Individual o cohorte.",
+    epp: [
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal / Pechera" },
+    ],
+    notas: [],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 117,
+    nombre: "Úlcera por presión infectada — menor o limitada",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🩹",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [{ icono: "🧤", label: "Guantes" }],
+    notas: ["Si el apósito cubre y contiene el drenaje."],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 118,
+    nombre: "Varicela Zoster (VVZ) — ver Varicela / Herpes Zoster",
+    tipo: ["aereo", "contacto"],
+    tipoLabel: ["Aérea", "Contacto"],
+    icono: "💠",
+    duracion: "Hasta que todas las lesiones formen costra.",
+    habitacion: "Individual exclusiva, puerta cerrada.",
+    epp: [
+      { icono: "🔵", label: "KN95" },
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+    ],
+    notas: ["Ver entrada completa: Varicela / Herpes Zoster diseminado."],
+    alertas: ["Personal susceptible NO debe atender."],
+    pasos: []
+  },
+  {
+    id: 119,
+    nombre: "Vibrio parahaemolyticus — diarrea",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🦠",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [{ icono: "🧤", label: "Guantes" }],
+    notas: [
+      "Usar Precauciones de Contacto para personas con pañales o incontinencia durante la duración de la enfermedad o para controlar brotes institucionales.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 120,
+    nombre: "Yersinia enterocolítica — diarrea",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🦠",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [{ icono: "🧤", label: "Guantes" }],
+    notas: [
+      "Usar Precauciones de Contacto para personas con pañales o incontinencia durante la duración de la enfermedad o para controlar brotes institucionales.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 121,
+    nombre: "Virus de inmunodeficiencia humana (VIH) — ver VIH/SIDA",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🩺",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [{ icono: "🧤", label: "Guantes según procedimiento" }],
+    notas: ["Quimioprofilaxis posterior a la exposición para algunas exposiciones a la sangre."],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 122,
+    nombre: "VPI — infección por virus parainfluenza en lactantes y niños pequeños",
+    tipo: ["contacto"],
+    tipoLabel: ["Contacto"],
+    icono: "👶",
+    duracion: "Duración de la enfermedad.",
+    habitacion: "Individual o cohorte.",
+    epp: [
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal" },
+      { icono: "😷", label: "Mascarilla quirúrgica" },
+    ],
+    notas: [
+      "La excreción viral puede prolongarse en pacientes inmunodeprimidos.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 123,
+    nombre: "Organismos multirresistentes (MDRO) — infección o colonización general",
+    tipo: ["contacto"],
+    tipoLabel: ["Contacto"],
+    icono: "⚠️",
+    duracion: "Indefinido. Ver entradas específicas (SAMR, VRE, BLEE, KPC, NDM, OXA, CRAB).",
+    habitacion: "Individual preferida o cohorte. KPC/NDM/OXA: individual obligatoria.",
+    epp: [
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal / Pechera impermeable" },
+    ],
+    notas: [
+      "Precauciones de Contacto recomendadas en entornos con evidencia de transmisión en curso, entornos de cuidados intensivos o heridas que no se pueden contener con apósitos.",
+      "Baño con clorhexidina 2% días alternos.",
+      "Al reingresar: reimplementar de inmediato sin esperar nuevos cultivos.",
+      "Consignar en epicrisis y carné de alta.",
+    ],
+    alertas: ["Asumir colonización permanente. Reimplementar siempre al reingresar."],
+    pasos: []
+  },
+  {
+    id: 124,
+    nombre: "Aspergilosis",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🍄",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [{ icono: "🧤", label: "Guantes según procedimiento" }],
+    notas: [
+      "Agregar Precauciones de Contacto y Aéreas si hay infección masiva de tejidos blandos con abundante drenaje e irrigaciones repetidas.",
+      "La fuente es ambiental (esporas). No se transmite persona a persona habitualmente.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 125,
+    nombre: "Malaria",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🦟",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [{ icono: "🧤", label: "Guantes según procedimiento" }],
+    notas: [
+      "No se transmite de persona a persona, excepto a través de transfusiones en raras ocasiones.",
+      "Seguir estrictamente las Precauciones Estándar durante la atención.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 126,
+    nombre: "Rabia",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🩺",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [{ icono: "🧤", label: "Guantes" }],
+    notas: [
+      "Transmisión de persona a persona rara; se ha informado a través de trasplantes de córnea, tejidos y órganos.",
+      "Si el paciente ha mordido a otra persona o la saliva ha contaminado una herida abierta o mucosa: lavar bien el área y administrar profilaxis post-exposición.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 127,
+    nombre: "Ántrax cutáneo",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "⚠️",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [{ icono: "🧤", label: "Guantes" }],
+    notas: [
+      "Posible transmisión a través de contacto con piel no intacta con lesiones supurantes: usar Precauciones de Contacto si hay gran cantidad de supuración no contenida.",
+      "Lavado de manos con agua y jabón es preferible al alcohol (el alcohol no tiene actividad esporicida).",
+      "Ántrax pulmonar: no se transmite de persona a persona.",
+    ],
+    alertas: ["Notificación obligatoria a autoridad sanitaria."],
+    pasos: []
+  },
+
+  // ==================== GRAMNEGATIVOS FRECUENTES ====================
+  {
+    id: 41,
+    nombre: "Proteus spp. (mirabilis, vulgaris) — sensible o resistencia no BLEE/carbapenemasa",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🦠",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [
+      { icono: "🧤", label: "Guantes según procedimiento" },
+      { icono: "🥼", label: "Delantal si riesgo de salpicaduras" },
+    ],
+    notas: [
+      "Proteus spp. sensible o con resistencia no catalogada como MDRO: solo Precauciones Estándar.",
+      "Si el antibiograma reporta producción de BLEE: pasar a Precauciones de Contacto (ver entrada BLEE).",
+      "Si hay producción de carbapenemasa (KPC, NDM, OXA): pasar a Precauciones de Contacto reforzadas (ver entrada KPC/NDM/OXA).",
+      "Higiene de manos estricta después de cualquier contacto con secreciones, heridas o sondas del paciente.",
+      "Frecuente en ITU asociada a catéter, infecciones de herida quirúrgica y bacteriemia. No implica aislamiento per se.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 42,
+    nombre: "Proteus spp. productor de BLEE",
+    tipo: ["contacto"],
+    tipoLabel: ["Contacto"],
+    icono: "🦠",
+    duracion: "Indefinido. Asumir colonización permanente.",
+    habitacion: "Individual preferida o cohorte.",
+    epp: [
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal / Pechera impermeable" },
+    ],
+    notas: [
+      "Proteus mirabilis con BLEE es MDRO: aplicar Precauciones de Contacto.",
+      "Baño con jabón de clorhexidina 2% días alternos hasta el alta.",
+      "Desinfección ambiental con cloro 1.000 ppm.",
+      "Al reingresar al hospital: reimplementar precauciones de contacto inmediatamente, sin esperar nuevos cultivos.",
+      "Consignar en epicrisis y carné de alta.",
+    ],
+    alertas: [
+      "Colonización puede persistir durante meses. Asumir permanente al reingresar.",
+    ],
+    pasos: [
+      "Colocarse guantes y delantal antes de entrar a la habitación.",
+      "Atención clínica con equipo exclusivo cuando sea posible.",
+      "Retirar guantes y delantal dentro de la habitación.",
+      "Higienizar manos con alcohol gel al salir.",
+      "Abrir puerta con toalla de papel.",
+    ]
+  },
+  {
+    id: 43,
+    nombre: "Klebsiella pneumoniae / E. coli — sensible o resistencia no MDRO",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🦠",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [
+      { icono: "🧤", label: "Guantes según procedimiento" },
+    ],
+    notas: [
+      "Klebsiella o E. coli sensibles o con resistencias menores que no constituyen MDRO: solo Precauciones Estándar.",
+      "Si se detecta producción de BLEE: pasar a Precauciones de Contacto.",
+      "Si se detecta carbapenemasa (KPC, NDM, OXA): pasar a Precauciones de Contacto reforzadas.",
+      "Higiene de manos rigurosa tras contacto con heridas, sondas, aspirado traqueal o heces.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 44,
+    nombre: "Klebsiella pneumoniae / E. coli productora de BLEE",
+    tipo: ["contacto"],
+    tipoLabel: ["Contacto"],
+    icono: "🦠",
+    duracion: "Indefinido. Asumir colonización permanente.",
+    habitacion: "Individual preferida o cohorte.",
+    epp: [
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal / Pechera impermeable" },
+    ],
+    notas: [
+      "MDRO: aplicar Precauciones de Contacto.",
+      "Baño con clorhexidina 2% días alternos hasta el alta.",
+      "Desinfección con cloro 1.000 ppm.",
+      "Al reingresar: reimplementar de inmediato.",
+      "Consignar en epicrisis y carné de alta.",
+    ],
+    alertas: [
+      "Asumir colonización permanente al reingresar.",
+    ],
+    pasos: []
+  },
+  {
+    id: 45,
+    nombre: "Pseudomonas aeruginosa — sensible",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🦠",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [
+      { icono: "🧤", label: "Guantes según procedimiento" },
+    ],
+    notas: [
+      "Pseudomonas sensible a tratamiento habitual: solo Precauciones Estándar.",
+      "Si el antibiograma reporta MDR (resistencia a ≥3 familias de antibióticos): pasar a Precauciones de Contacto.",
+      "Si produce carbapenemasa: pasar a Precauciones de Contacto reforzadas.",
+      "Frecuente en NAVM, ITU, infecciones de herida en pacientes críticos.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 46,
+    nombre: "Pseudomonas aeruginosa MDR (multiresistente)",
+    tipo: ["contacto"],
+    tipoLabel: ["Contacto"],
+    icono: "🦠",
+    duracion: "Indefinido. Asumir colonización permanente.",
+    habitacion: "Individual preferida o cohorte con baño exclusivo.",
+    epp: [
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal / Pechera impermeable" },
+    ],
+    notas: [
+      "Pseudomonas MDR: aplicar Precauciones de Contacto.",
+      "Baño con clorhexidina 2% días alternos.",
+      "Desinfección con cloro 1.000 ppm.",
+      "Especial atención a equipos de terapia respiratoria (nebulizadores, ventiladores): desinfección rigurosa entre pacientes.",
+      "Al reingresar: reimplementar inmediatamente.",
+    ],
+    alertas: [
+      "Opciones terapéuticas muy limitadas. Notificar a IAAS.",
+    ],
+    pasos: []
+  },
+  {
+    id: 47,
+    nombre: "Acinetobacter baumannii — sensible o resistencia menor",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🦠",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [
+      { icono: "🧤", label: "Guantes según procedimiento" },
+    ],
+    notas: [
+      "Acinetobacter sensible: solo Precauciones Estándar.",
+      "Alta vigilancia: Acinetobacter tiene alta capacidad de desarrollar resistencia. Monitorear antibiogramas.",
+      "Si MDR o carbapenemasa: pasar a Precauciones de Contacto o Contacto reforzado según corresponda.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 48,
+    nombre: "Acinetobacter baumannii MDR / carbapenem-resistente (CRAB)",
+    tipo: ["contacto"],
+    tipoLabel: ["Contacto (reforzado)"],
+    icono: "🦠",
+    duracion: "Indefinido. Asumir colonización permanente.",
+    habitacion: "Individual preferida. Personal exclusivo deseable en brotes.",
+    epp: [
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal / Pechera impermeable" },
+    ],
+    notas: [
+      "CRAB es ARAISP de alta prioridad OMS. Notificar a IAAS.",
+      "Supervivencia ambiental prolongada (semanas en superficies secas): desinfección ambiental rigurosa con cloro 1.000 ppm.",
+      "Baño con clorhexidina 2% días alternos.",
+      "Screening de contactos en brotes (hisopado piel/heridas/traqueostomía).",
+      "Al reingresar: reimplementar de inmediato.",
+    ],
+    alertas: [
+      "Alta supervivencia ambiental. Limpieza y desinfección de superficies son críticas.",
+      "Notificar a IAAS ante todo caso nuevo.",
+    ],
+    pasos: []
+  },
+  {
+    id: 49,
+    nombre: "Enterobacter spp. / Serratia spp. / Morganella spp. — sensible",
+    tipo: ["estandar"],
+    tipoLabel: ["Solo Estándar"],
+    icono: "🦠",
+    duracion: "N/A",
+    habitacion: "No requiere aislamiento especial.",
+    epp: [
+      { icono: "🧤", label: "Guantes según procedimiento" },
+    ],
+    notas: [
+      "Gram negativos enterobacterales sensibles: solo Precauciones Estándar.",
+      "Si BLEE o carbapenemasa: escalar a Contacto o Contacto reforzado según tipo de resistencia.",
+      "Morganella morganii comparte hábitat ecológico con Proteus (tracto gastrointestinal). Manejo equivalente.",
+    ],
+    alertas: [],
+    pasos: []
+  },
+  {
+    id: 50,
+    nombre: "Candida auris",
+    tipo: ["contacto"],
+    tipoLabel: ["Contacto (se maneja como MDRO)"],
+    icono: "🍄",
+    duracion: "Indefinido. Asumir colonización permanente.",
+    habitacion: "Individual exclusiva con baño. Personal exclusivo deseable.",
+    epp: [
+      { icono: "🧤", label: "Guantes" },
+      { icono: "🥼", label: "Delantal / Pechera impermeable" },
+    ],
+    notas: [
+      "Candida auris se maneja como MDRO, a diferencia de otras especies de Candida que solo requieren Estándar.",
+      "Alta resistencia a desinfectantes habituales: usar cloro 1.000 ppm o productos con actividad demostrada contra C. auris.",
+      "Supervivencia ambiental prolongada. Limpieza terminal exhaustiva al egreso.",
+      "Notificar a IAAS ante todo caso nuevo.",
+      "Screening de contactos según indicación de IAAS.",
+    ],
+    alertas: [
+      "No confundir con otras Candida spp. que solo requieren Estándar.",
+      "Notificación inmediata a IAAS.",
+    ],
+    pasos: []
+  },
+];
+
+// ============================================================
+// ESTADO Y LÓGICA
+// ============================================================
+let condicionActiva = null;
+let terminoBusqueda = '';
+let filtroTipo = '';
+
+function tipoPrincipal(tipos) {
+  if (tipos.includes('aereo')) return tipos.length > 1 ? 'combo' : 'aereo';
+  if (tipos.includes('gotas') && tipos.includes('contacto')) return 'combo';
+  if (tipos.includes('gotas')) return 'gotas';
+  if (tipos.includes('contacto')) return 'contacto';
+  return 'estandar';
+}
+
+function badgeClase(tipo) {
+  const mapa = { aereo: 'badge-aereo', gotas: 'badge-gotas', contacto: 'badge-contacto', estandar: 'badge-estandar', combo: 'badge-combo' };
+  return mapa[tipo] || 'badge-estandar';
+}
+
+function badgeLabel(tipos) {
+  if (tipos.length === 1) {
+    const m = { aereo: 'Aérea', gotas: 'Gotitas', contacto: 'Contacto', estandar: 'Estándar' };
+    return m[tipos[0]] || tipos[0];
+  }
+  return 'Combinada';
+}
+
+function highlight(texto, termino) {
+  if (!termino) return texto;
+  const re = new RegExp(`(${termino.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+  return texto.replace(re, '<mark>$1</mark>');
+}
+
+function condicionMatchBusqueda(c, termino) {
+  if (!termino) return true;
+  const t = termino.toLowerCase();
+  return (
+    c.nombre.toLowerCase().includes(t) ||
+    c.notas.some(n => n.toLowerCase().includes(t)) ||
+    c.alertas.some(a => a.toLowerCase().includes(t)) ||
+    c.epp.some(e => e.label.toLowerCase().includes(t)) ||
+    c.tipoLabel.some(l => l.toLowerCase().includes(t)) ||
+    c.duracion.toLowerCase().includes(t) ||
+    c.habitacion.toLowerCase().includes(t)
+  );
+}
+
+function condicionMatchFiltro(c, filtro) {
+  if (!filtro) return true;
+  if (filtro === 'combo') return c.tipo.length > 1;
+  return c.tipo.includes(filtro);
+}
+
+function condicionesFiltradas() {
+  return CONDICIONES.filter(c =>
+    condicionMatchBusqueda(c, terminoBusqueda) &&
+    condicionMatchFiltro(c, filtroTipo)
+  );
+}
+
+function renderLista() {
+  const lista = document.getElementById('listaCondiciones');
+  const count = document.getElementById('resultCount');
+  const filtradas = condicionesFiltradas();
+
+  count.textContent = `${filtradas.length} condición${filtradas.length !== 1 ? 'es' : ''}`;
+
+  if (filtradas.length === 0) {
+    lista.innerHTML = `<div class="sin-resultados">Sin resultados para "<strong>${terminoBusqueda}</strong>"</div>`;
+    return;
+  }
+
+  // Agrupar por tipo principal
+  const grupos = { aereo: [], gotas: [], contacto: [], estandar: [], combo: [] };
+  filtradas.forEach(c => {
+    const t = tipoPrincipal(c.tipo);
+    grupos[t].push(c);
+  });
+
+  const secLabels = {
+    aereo: { emoji: '🌬️', label: 'Vía Aérea' },
+    combo: { emoji: '🔀', label: 'Combinadas' },
+    gotas: { emoji: '💧', label: 'Gotitas' },
+    contacto: { emoji: '🤝', label: 'Contacto' },
+    estandar: { emoji: '✅', label: 'Solo Estándar' },
+  };
+
+  let html = '';
+  ['aereo', 'combo', 'gotas', 'contacto', 'estandar'].forEach(tipo => {
+    if (grupos[tipo].length === 0) return;
+    const { emoji, label } = secLabels[tipo];
+    html += `<div class="sidebar-section">
+      <div class="sidebar-section-title">${emoji} ${label}</div>`;
+    grupos[tipo].forEach(c => {
+      const activo = condicionActiva === c.id ? ' activo' : '';
+      const tp = tipoPrincipal(c.tipo);
+      html += `<div class="sidebar-item${activo}" data-id="${c.id}">
+        <div class="sidebar-item-nombre">${highlight(c.nombre, terminoBusqueda)}</div>
+        <span class="badge-tipo ${badgeClase(tp)}">${badgeLabel(c.tipo)}</span>
+      </div>`;
+    });
+    html += '</div>';
+  });
+
+  lista.innerHTML = html;
+
+  // Eventos
+  lista.querySelectorAll('.sidebar-item').forEach(el => {
+    el.addEventListener('click', () => {
+      const id = parseInt(el.dataset.id);
+      seleccionarCondicion(id);
+    });
+  });
+}
+
+function icClase(tipos) {
+  const t = tipoPrincipal(tipos);
+  return { aereo: 'ic-aereo', gotas: 'ic-gotas', contacto: 'ic-contacto', estandar: 'ic-estandar', combo: 'ic-combo' }[t] || 'ic-estandar';
+}
+
+function tipoBadgeClase(label) {
+  const l = label.toLowerCase();
+  if (l.includes('aérea') || l.includes('aereo')) return 'tb-aereo';
+  if (l.includes('gotas') || l.includes('gotitas')) return 'tb-gotas';
+  if (l.includes('contacto')) return 'tb-contacto';
+  return 'tb-estandar';
+}
+
+function renderDetalle(c) {
+  const eppHtml = c.epp.map(e =>
+    `<div class="epp-item"><span class="epp-icono">${e.icono}</span><span>${e.label}</span></div>`
+  ).join('');
+
+  const notasHtml = c.notas.map(n =>
+    `<div class="nota-item"><span class="nota-bullet">●</span><span>${n}</span></div>`
+  ).join('') || '<p style="color:#95A5A6; font-size:12px;">Sin notas adicionales específicas.</p>';
+
+  const alertasHtml = c.alertas.map(a =>
+    `<div class="alerta-item"><span class="alerta-bullet">⚠</span><span>${a}</span></div>`
+  ).join('');
+
+  const pasosHtml = c.pasos.length > 0
+    ? `<div class="bloque">
+        <div class="bloque-titulo" style="background:#F4F6F8; color:var(--azul-med);">📋 Procedimiento paso a paso</div>
+        <div class="bloque-cuerpo pasos">
+          ${c.pasos.map((p, i) => `<div class="paso"><div class="paso-num">${i+1}</div><span>${p}</span></div>`).join('')}
+        </div>
+      </div>`
+    : '';
+
+  const alertasBloque = c.alertas.length > 0
+    ? `<div class="bloque bloque-alerta">
+        <div class="bloque-titulo">⚠ Alertas / Puntos críticos</div>
+        <div class="bloque-cuerpo">${alertasHtml}</div>
+      </div>`
+    : '';
+
+  const badgesHtml = c.tipoLabel.map(l =>
+    `<span class="tipo-badge ${tipoBadgeClase(l)}">${l}</span>`
+  ).join('');
+
+  document.getElementById('tarjetaDetalle').innerHTML = `
+    <div class="tarjeta-detalle">
+      <div class="tarjeta-header">
+        <div class="tarjeta-icono ${icClase(c.tipo)}">${c.icono}</div>
+        <div class="tarjeta-titulo-wrap">
+          <div class="tarjeta-nombre">${c.nombre}</div>
+          <div class="tarjeta-badges">${badgesHtml}</div>
+        </div>
+      </div>
+
+      <div class="datos-rapidos">
+        <div class="dato-rapido">
+          <div class="dato-label">⏱ Duración</div>
+          <div class="dato-valor">${c.duracion}</div>
+        </div>
+        <div class="dato-rapido">
+          <div class="dato-label">🏠 Habitación</div>
+          <div class="dato-valor">${c.habitacion}</div>
+        </div>
+        <div class="dato-rapido">
+          <div class="dato-label">📄 Protocolo</div>
+          <div class="dato-valor" style="color:#888; font-size:11px;">IAAS-HDC-PA-001<br>v01/2025 · HDC Calama</div>
+        </div>
+      </div>
+
+      <div class="detalle-body">
+        <div class="bloque bloque-epp">
+          <div class="bloque-titulo">🛡️ EPP Mínimo Requerido</div>
+          <div class="bloque-cuerpo">
+            <div class="epp-grid">${eppHtml}</div>
+            <p style="font-size:11px; color:#7F8C8D; margin-top:10px;">
+              ⚡ En PGA (intubación, aspiración, broncoscopía, nebulizaciones): elevar siempre a KN95 + protección ocular + delantal + guantes.
+            </p>
+          </div>
+        </div>
+
+        ${alertasBloque}
+
+        <div class="bloque bloque-notas">
+          <div class="bloque-titulo">📌 Medidas Adicionales y Notas Clave</div>
+          <div class="bloque-cuerpo">${notasHtml}</div>
+        </div>
+
+        ${pasosHtml}
+
+        <div style="padding:10px 14px; background:var(--azul-xclaro); border-radius:6px; border:1px solid var(--azul-claro);">
+          <p style="font-size:11px; color:var(--azul);">
+            ✅ <strong>Siempre</strong>: cumplir Precauciones Estándar como base. Las precauciones adicionales se suman, no las reemplazan.
+            <br>🔍 Consultas y casos complejos: Unidad IAAS / Comité PCI — Hospital del Cobre.
+          </p>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function seleccionarCondicion(id) {
+  condicionActiva = id;
+  const c = CONDICIONES.find(x => x.id === id);
+  if (!c) return;
+
+  // Actualizar sidebar
+  document.querySelectorAll('.sidebar-item').forEach(el => {
+    el.classList.toggle('activo', parseInt(el.dataset.id) === id);
+  });
+
+  // Mostrar detalle
+  document.getElementById('bienvenida').style.display = 'none';
+  const td = document.getElementById('tarjetaDetalle');
+  td.style.display = 'block';
+  renderDetalle(c);
+
+  // En móvil: mostrar panel detalle y hacer scroll
+  if (window.innerWidth <= 768) {
+    const detalle = document.getElementById('detalle');
+    detalle.style.display = 'block';
+    detalle.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+// ============================================================
+// EVENTOS
+// ============================================================
+document.getElementById('buscar').addEventListener('input', e => {
+  terminoBusqueda = e.target.value.trim();
+  condicionActiva = null;
+  document.getElementById('bienvenida').style.display = 'flex';
+  document.getElementById('tarjetaDetalle').style.display = 'none';
+  renderLista();
+});
+
+document.getElementById('filtroTipo').addEventListener('change', e => {
+  filtroTipo = e.target.value;
+  condicionActiva = null;
+  document.getElementById('bienvenida').style.display = 'flex';
+  document.getElementById('tarjetaDetalle').style.display = 'none';
+  renderLista();
+});
+
+// Modal
+document.getElementById('fabRef').addEventListener('click', () => {
+  document.getElementById('modalRef').classList.add('abierto');
+});
+document.getElementById('cerrarModal').addEventListener('click', () => {
+  document.getElementById('modalRef').classList.remove('abierto');
+});
+document.getElementById('modalRef').addEventListener('click', e => {
+  if (e.target === document.getElementById('modalRef')) {
+    document.getElementById('modalRef').classList.remove('abierto');
+  }
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.getElementById('modalRef').classList.remove('abierto');
+});
+
+// ============================================================
+// INIT
+// ============================================================
+renderLista();
+</script>
+</body>
+</html>
